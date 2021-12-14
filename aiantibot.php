@@ -169,7 +169,7 @@ function antibot_get_events_by_hit_id() {
 
 function antibot_isbot() {
     global $wpdb;
-    
+    #1
     $res=$wpdb->get_results("SELECT * from antibot_stat  ");
     print_r($res);
 }

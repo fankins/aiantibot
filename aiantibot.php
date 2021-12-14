@@ -173,4 +173,5 @@ function antibot_isbot() {
     $res=$wpdb->get_results("SELECT * from antibot_stat  ");
     print_r($res);
 }
+#https://colab.research.google.com/drive/1nuFxwCfSwTiZzVsKwyJsz6Le4bHbvfkb#scrollTo=_S88HtCOARCC
 ?>

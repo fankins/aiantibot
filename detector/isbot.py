@@ -1,10 +1,12 @@
 #!/home/a/a1konsfs/.local/bin/python3.9
-
+import cgi
 import os, sys
+import json
 sys.path.append('/home/a/a1konsfs/.local/lib/python3.9/site-packages/')
 import pandas as pd
 import gdown
 import numpy as np
+import base64
 from tensorflow import keras
 from tensorflow.keras import utils 
 from tensorflow.keras import Model 
@@ -16,6 +18,11 @@ import keras.backend as K
 import matplotlib.pyplot as plt
 from tensorflow.keras.optimizers import Adam
 from sklearn.metrics import mean_squared_error
+import sys
+if sys.version_info[0] < 3: 
+    from StringIO import StringIO
+else:
+    from io import StringIO
 import warnings
 warnings.filterwarnings("ignore")
 
@@ -130,14 +137,19 @@ with open('maxInRow.pickle', 'rb') as f:
 #print(classes['vendor'])
 #print(maxInRow)
 
-import keras
+
 model = keras.models.load_model("model.h")
 
 
-gdown.download('https://vyborsmartphona.ru/?a=antibot_get_params_by_hit_id&hit_id=-410180461', 'data/data.csv', quiet=True)
-
-df = pd.read_csv('data/data.csv',sep='\t')
-df.head(2)
+#gdown.download('https://vyborsmartphona.ru/?a=antibot_get_params_by_hit_id&hit_id=-410180461', 'data/data.csv', quiet=True)
+form = cgi.FieldStorage()
+encoded=form.getfirst("data",'')
+#encoded='MTIzNDU='
+data=base64.b64decode(encoded).decode("utf-8") 
+#print("data=",data)
+stringIO=StringIO(data)
+df = pd.read_csv(stringIO,sep='\t')
+#df = pd.read_csv('data/data.csv',sep='\t')
 hit_ids=df['hit_id']
 x_test=processData()
 for i in range(x_test.shape[0]):
@@ -147,6 +159,10 @@ for i in range(x_test.shape[0]):
    isbot="не бот"
  else:
    isbot="является ботом"
- isbot_ver=round(pred[0][1]*100)
- nobot_ver=round(pred[0][0]*100)
- print(f"ID {hit_ids[i]} скорее всего {isbot}, вероятность что бот - {isbot_ver}%, что не бот - {nobot_ver}%")
+ isbot_ver=int(round(pred[0][1]*100))
+ nobot_ver=int(round(pred[0][0]*100))
+ res=dict()
+ res['isbot']=isbot_ver
+ res['nobot']=nobot_ver
+print(json.dumps(res));
+ #print(f"ID {hit_ids[i]} скорее всего {isbot}, вероятность что бот - {isbot_ver}%, что не бот - {nobot_ver}%")

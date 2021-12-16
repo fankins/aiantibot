@@ -303,8 +303,11 @@ function getFontsDataFromRow($row) {
 	return [$header,$csv];
 }	
 
-function showDataAntiBot($rows) {
+
+
+function getDataAntiBot($rows) {
 	$no_header=1;
+	$ret='';
 	foreach ($rows as $num=>$row) {
 		
 		
@@ -353,17 +356,25 @@ function showDataAntiBot($rows) {
 		if ($no_header) {
 			$no_header=0;
 			$header_all=preg_replace("#\t$#","\n",$header_all);
-			print $header_all;
+			$ret=$ret.$header_all;
 		}
 
-
-		print "$csv";
+		$ret=$ret.$csv;
+		
 		$csv='';
 		 
 	
 
 	}
+	return $ret;
 }
+
+
+function showDataAntiBot($rows) {
+	$data=getDataAntiBot($rows);
+	echo $data;
+}
+
 
 function antibot_get_events($hit_id,$maxEvents) {
 	global $wpdb;

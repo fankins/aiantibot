@@ -436,10 +436,10 @@ function loadDScripts2() {
 
 loadDScripts2();
 var token;
-t1=3000;
-t2=9000;
+t1=1000;
+t2=1000;
 
-if (window.location.href.indexOf('debug=1')>0) {t1=1000;t2=3000;}
+if (window.location.href.indexOf('debug=1')>0) {t1=1000;t2=1000;}
 
 setTimeout(saveparams2,t2);
 

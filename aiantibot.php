@@ -21,6 +21,7 @@ function antibot_init() {
     
     wp_enqueue_script( 'detectrtc',  ANTIBOT_PLUGIN_URL. 'detectrtc.js' );
     wp_enqueue_script( 'userparams',  ANTIBOT_PLUGIN_URL. 'userparams.js' );
+    wp_enqueue_script( 'isbot',  ANTIBOT_PLUGIN_URL. 'isbot.js' );
     
   
    
@@ -28,13 +29,13 @@ function antibot_init() {
 
 function file_post_contents2($url, $data, $username = null, $password = null)
 {
-    $postdata = http_build_query($data);
    
     $opts = array('http' =>
         array(
+            'timeout' => 90,
             'method'  => 'POST',
             'header'  => 'Content-type: application/x-www-form-urlencoded',
-            'content' => $postdata
+            'content' => $data
         ),
         "ssl"=>array(
         "verify_peer"=>false,
@@ -46,9 +47,12 @@ function file_post_contents2($url, $data, $username = null, $password = null)
     {
         $opts['http']['header'] = ("Authorization: Basic " . base64_encode("$username:$password"));
     }
-
+    
     $context = stream_context_create($opts);
-    return file_get_contents($url, false, $context);
+    
+    $ans=file_get_contents($url, false, $context);
+    #var_dump($http_response_header);
+    return $ans;
 }
 
 
@@ -169,9 +173,27 @@ function antibot_get_events_by_hit_id() {
 
 function antibot_isbot() {
     global $wpdb;
-    #1
-    $res=$wpdb->get_results("SELECT * from antibot_stat  ");
-    print_r($res);
+    $hit_id=$_REQUEST['hit_id'];
+    $output_type=$_REQUEST['output_type'];
+    if (!$output_type) {$output_type='json';}
+    $res=$wpdb->get_results("SELECT * from antibot_stat where hit_id=$hit_id limit 1");
+    $row=(array)$res[0];
+    $rows[0]=$row;
+    $data=getDataAntiBot($rows);
+     $encoded=base64_encode($data);
+    // echo base64_encode("12345");
+    $json=file_post_contents2(ANTIBOT_PLUGIN_URL."detector/isbot.py","data=".$encoded);
+    $json=preg_replace("#\n#",'',$json);
+    //echo $json;
+    
+    if ($output_type=='json') {echo $json;}
+    if ($output_type=='js') {
+        $res=json_decode($json,1);
+        $isbot=$res['isbot'];
+        $nobot=$res['nobot'];
+        echo "window.isbot=$isbot;window.nobot=$nobot;console.log('isbot='+isbot,' nobot='+nobot);";
+    }
+    exit;
 }
 #https://colab.research.google.com/drive/1nuFxwCfSwTiZzVsKwyJsz6Le4bHbvfkb#scrollTo=_S88HtCOARCC
 ?>
